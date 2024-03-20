@@ -10,9 +10,3 @@ CREATE TABLE IF NOT EXISTS users (
     password TEXT NOT NULL,
     balance REAL DEFAULT 0
 );
-
-CREATE TABLE IF NOT EXISTS stocks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    price REAL NOT NULL
-);

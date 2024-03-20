@@ -5,18 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stocks</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+h1 {
+    color: #333;
+}
+
+p {
+    color: #666;
+}
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Stocks</h1>
-        {% for stock in stocks %}
-                <h2>{{ stock[0] }}</h2>
-                <p>Price: ${{ stock[1] }}</p>
-                <br>
-        {% endfor %}
+        <h1><u>Stocks</u></h1>
+        <p>(Purchasing to be implemented soon)</p>
         <br>
+        <h1>Secure Banking | Rating: A+</h1>
+        <h3>$30.00 a share</h3>
         <br>
-        <p><b>Purchasing to be implemented soon.</b></p>
+        <h1>ISSS | Rating: A-</h1>
+        <h3>$20.00 a share</h3>
+        <br>
+        <h1>Cantaloupe Stock | Rating: F</h1>
+        <h3>$00.01 a share</h3>
+        <br>
     </div>
 
 </body>
