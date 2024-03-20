@@ -21,13 +21,16 @@ def init_db():
         cursor = db.cursor()
         admin_username = "admin"
         admin_password = "admin" 
-        cursor.execute("SELECT COUNT(*) FROM users WHERE username=?", ("admin",))
+        cursor.execute("SELECT COUNT(*) FROM users")
         if not cursor.fetchone()[0]:
-            cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (admin_username, admin_password))
+            cursor.execute("INSERT INTO users (username, password, balance) VALUES (?, ?, ?)", (admin_username, admin_password, 1338))
+            # Not really vulnerable; these users are just examples and would normally be created through the app
+            cursor.execute("INSERT INTO users (username, password, balance) VALUES (?, ?, ?)", ("johndoe", "Password123!", -9899))
+            cursor.execute("INSERT INTO users (username, password, balance) VALUES (?, ?, ?)", ("haxor", "Pr0v4b1yIns3cur3!", 9999))
 
         # Create comments
         comment_username_1 = "johndoe"
-        comment_content_1 = "All my money disappeared. 0/10"
+        comment_content_1 = "All my money disappeared. I'm literally in debt. 0/10"
         comment_username_2 = "haxor"
         comment_content_2 = "<b>This text is bold... interesting...</b>"
         cursor.execute("SELECT COUNT(*) FROM comments")
