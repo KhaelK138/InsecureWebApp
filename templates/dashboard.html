@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <h1>Welcome, {{ username }}!</h1>
-        <h2>Account Balance: ${{ balance }}</h2>
+        <h2>Account Balance: ${{'%0.2f'| format(balance|float)}}</h2>
         <div class="button-container">
             <button onclick="location.href='/transfer'">Transfer Money</button>
             <button onclick="location.href='/?page=./templates/stocks.html'">Stocks</button>
@@ -19,6 +19,8 @@
             <button onclick="location.href='/logout'">Logout</button>
             <button onclick="deleteAccount()">Delete Account</button>
         </div>
+        <p><br><br><br><br><br><br></p>
+        
     
         <h2>Add a Comment:</h2>
         <form action="/add_comment" method="post">
