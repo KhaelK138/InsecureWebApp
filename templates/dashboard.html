@@ -9,15 +9,15 @@
 <body>
     <div class="container">
         <h1>Welcome, {{ username }}!</h1>
-        <h2>Account Balance: ${{ balance|round(2) }}</h2>
+        <h2>Account Balance: ${{ balance }}</h2>
         <div class="button-container">
             <button onclick="location.href='/transfer'">Transfer Money</button>
+            <button onclick="location.href='/?page=./templates/stocks.html'">Stocks</button>
             {% if is_admin %}
                 <button onclick="location.href='/admin'">Admin Panel</button>
             {% endif %}
-            <button onclick="location.href='/stocks'">Purchase Stocks</button>
             <button onclick="location.href='/logout'">Logout</button>
-            
+            <button onclick="deleteAccount()">Delete Account</button>
         </div>
     
         <h2>Add a Comment:</h2>
@@ -31,13 +31,21 @@
             <div class="comment-box">
                 <strong>{{ comment[0] }}</strong>
                 <hr>
-                <!-- Vulnerable: adding "safe" here disables sanitization -->
-                <!-- Flask uses Jinja, which automatically escapes input, -->
-                <!-- so I had to go out of my way to allow XSS, but with other -->
-                <!-- web apps sanitization must be done with libraries -->
                 <p>{{ comment[1]|safe }}</p>
             </div>
         {% endfor %}
     </div>
+
+    <script>
+        function deleteAccount() {
+            if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+                // If user confirms, redirect to the delete account route
+                window.location.href = '/delete_account';
+            } else {
+                // If user cancels, do nothing
+                return false;
+            }
+        }
+    </script>
 </body>
 </html>

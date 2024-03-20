@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, session
+from flask import Flask, request, render_template, redirect, session, send_file
 import sqlite3
 import os
 import subprocess
@@ -25,19 +25,6 @@ def init_db():
         if not cursor.fetchone()[0]:
             cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (admin_username, admin_password))
 
-        # Create example stocks
-        stock_name_1 = "Secure Banking | Rating: A+"
-        stock_price_1 = 30.00
-        stock_name_2 = "ISSS Stock | Rating: A-"
-        stock_price_2 = 20.00
-        stock_name_3 = "Cantaloupe Stock | Rating: F"
-        stock_price_3 = 00.01
-        cursor.execute("SELECT COUNT(*) FROM stocks")
-        if not cursor.fetchone()[0]:
-            cursor.execute("INSERT INTO stocks (name, price) VALUES (?, ?)", (stock_name_1, stock_price_1))
-            cursor.execute("INSERT INTO stocks (name, price) VALUES (?, ?)", (stock_name_2, stock_price_2))
-            cursor.execute("INSERT INTO stocks (name, price) VALUES (?, ?)", (stock_name_3, stock_price_3))
-
         # Create comments
         comment_username_1 = "johndoe"
         comment_content_1 = "All my money disappeared. 0/10"
@@ -56,10 +43,22 @@ def get_db():
     db = sqlite3.connect(DATABASE)
     return db
 
-# Home page with login form
 @app.route('/')
-def index():
-    return render_template('index.html')
+def serve_file():
+    # Get the 'file' parameter from the URL
+    file_param = request.args.get('page')
+
+    # Check if the 'file' parameter is present
+    if file_param:
+        try:
+            # Serve the specified file
+            return send_file(file_param)
+        except Exception as e:
+            # Handle exceptions, log, or customize error response
+            return f"Error: {str(e)}"
+    else:
+        return render_template('index.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -129,18 +128,42 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        balance = 100
         conn = get_db()
         cursor = conn.cursor()
         if password == "" or username == "":
             return render_template('register.html', error='Both fields must not be empty')
         try:
-            cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+            cursor.execute("INSERT INTO users (username, password, balance) VALUES (?, ?, ?)", (username, password, balance))
             conn.commit()
             session['username'] = username
             return redirect('/dashboard')
         except sqlite3.IntegrityError:
             return render_template('register.html', error='Username already exists')
     return render_template('register.html')
+
+@app.route('/delete_account', methods=['GET', 'POST'])
+def delete_account():
+    if 'username' not in session:
+        return redirect('/')
+
+    username = session['username']
+    conn = get_db()
+    cursor = conn.cursor()
+
+    try:
+        # Delete the user account based on the provided username
+        cursor.execute("DELETE FROM users WHERE username=?", (username,))
+        conn.commit()
+
+        # Clear the session to log the user out
+        session.clear()
+
+        return redirect('/')
+    except Exception as e:
+        # Handle any errors that occur during the deletion process
+        render_template('register.html', error="User not found")
+
 
 # Transfer money page
 @app.route('/transfer', methods=['GET', 'POST'])
