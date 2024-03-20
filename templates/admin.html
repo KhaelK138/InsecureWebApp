@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+</head>
+<body>
+    <h1>Admin Panel</h1>
+    {% if error %}
+        <p>{{ error }}</p>
+        {% endif %}
+    <table border="1">
+        <tr>
+            <th>Username</th>
+            <th>Password</th>
+            <th>Balance</th>
+            <th>Update User's Balance</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user[1] }}</td>
+            <td>{{ user[2] }}</td>
+            <td>{{ user[3] }}</td>
+            <td>
+                <form action="/admin/update_balance" method="post">
+                    <input type="hidden" name="username" value="{{ user[1] }}">
+                    <input type="number" name="balance" value="{{ user[3] }}">
+                    <input type="submit" value="Update Balance">
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <a href="/dashboard">Back to Dashboard</a>
+</body>
+</html>

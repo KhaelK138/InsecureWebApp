@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Banking App - Login</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Login</h1>
+        {% if error %}
+        <p>{{ error }}</p>
+        {% endif %}
+        <form action="/login" method="post">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username"><br>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password"><br>
+            <br>
+            <button onclick=submit()>Login</button>
+        </form>
+        <p>Need an account? <a href="/register">Register here</a></p>
+        
+    </div>
+</body>
+</html>

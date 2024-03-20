@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking App - Transfer Money</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+</head>
+<body>
+    <div class="container">
+        <h1>Transfer Money</h1>
+        {% if error %}
+            <p>{{ error }}</p>
+        {% endif %}
+        <form action="/transfer" method="post" onsubmit="return validateTransfer()">
+            <label for="recipient">Recipient:</label><br>
+            <input type="text" id="recipient" name="recipient"><br>
+            <label for="amount">Amount:</label><br>
+            <input type="number" id="amount" name="amount"><br>
+            <br>
+            <button onclick=submit()>Transfer</button>
+        </form>
+        <br>
+        <a href="/dashboard">Back to Dashboard</a>
+    </div>
+    
+</body>
+<script>
+    function validateTransfer() {
+        var recipient = document.getElementById('recipient').value;
+        var sender = "{{ username }}"; // Get the logged-in user's username from Flask
+        console.log(recipient)
+        console.log(sender)
+        console.log(recipient === sender)
+        if (recipient === sender) {
+            alert("You cannot transfer money to yourself!");
+            return false; // Prevent form submission
+        }
+        return true; // Allow form submission
+    }
+</script>
+</html>
