@@ -4,6 +4,7 @@ import os
 import subprocess
 
 app = Flask(__name__)
+
 # Vulnerable: Plaintext Secrets
 app.secret_key = 'super_secret_key_for_database'
 
@@ -17,8 +18,8 @@ def init_db():
         with app.open_resource('schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
 
-        # Vulnerable: plaintext secrets and bad password
         cursor = db.cursor()
+        # Vulnerable: plaintext secrets; bad Administrator password
         admin_username = "admin"
         admin_password = "admin" 
         cursor.execute("SELECT COUNT(*) FROM users")
@@ -48,7 +49,7 @@ def get_db():
 
 @app.route('/')
 def serve_file():
-    # Get the 'file' parameter from the URL
+    # Vulnerable: getting arbitrary file path from user and serving the file
     file_param = request.args.get('page')
 
     # Check if the 'file' parameter is present
@@ -137,9 +138,10 @@ def register():
         if password == "" or username == "":
             return render_template('register.html', error='Both fields must not be empty')
         try:
-            # Vulnerable: no need for passwords to be displayed to an admin
+            # Vulnerable: passwords stored in plaintext in database
             cursor.execute("INSERT INTO users (username, password, balance) VALUES (?, ?, ?)", (username, password, balance))
             conn.commit()
+            # Vulnerable: Using only the username as a session token
             session['username'] = username
             return redirect('/dashboard')
         except sqlite3.IntegrityError:
@@ -258,6 +260,7 @@ def subscribe():
 
     # Vulnerable: This is simulating what an actual server would do 
     # (essentially a placeholder for a real mail command)
+    # and is vulnerable to command injection into subprocess.run
     command = f"echo Subscribed {email}."
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
 
