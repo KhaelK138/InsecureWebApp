@@ -1,12 +1,11 @@
 from flask import Flask, request, render_template, redirect, session, send_file
 import sqlite3
-import os
 import subprocess
 
 app = Flask(__name__)
 
 # Vulnerable: Plaintext Secrets
-app.secret_key = 'super_secret_key_for_database'
+app.secret_key = 'super_secret_auth_key'
 
 # Path to SQLite database
 DATABASE = 'database.db'
