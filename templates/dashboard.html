@@ -33,6 +33,8 @@
             <div class="comment-box">
                 <strong>{{ comment[0] }}</strong>
                 <hr>
+                <!-- Vulnerable: adding |safe allows for HTML/JavaScript -->
+                <!-- This is abnormal, though. Most apps require sanitization, rather than providing it -->
                 <p>{{ comment[1]|safe }}</p>
             </div>
         {% endfor %}
