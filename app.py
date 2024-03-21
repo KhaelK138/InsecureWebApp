@@ -138,7 +138,7 @@ def register():
         if password == "" or username == "":
             return render_template('register.html', error='Both fields must not be empty')
         try:
-            # Vulnerable: no need for passwords to be displayed to an admin
+            # Vulnerable: passwords stored in plaintext in database
             cursor.execute("INSERT INTO users (username, password, balance) VALUES (?, ?, ?)", (username, password, balance))
             conn.commit()
             session['username'] = username
