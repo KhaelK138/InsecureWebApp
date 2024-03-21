@@ -141,6 +141,7 @@ def register():
             # Vulnerable: passwords stored in plaintext in database
             cursor.execute("INSERT INTO users (username, password, balance) VALUES (?, ?, ?)", (username, password, balance))
             conn.commit()
+            # Vulnerable: Using only the username as a session token
             session['username'] = username
             return redirect('/dashboard')
         except sqlite3.IntegrityError:
