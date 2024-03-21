@@ -1,6 +1,7 @@
-from flask import Flask, request, render_template, redirect, session, send_file
+from flask import Flask, request, render_template, redirect, send_file, make_response
 import sqlite3
 import subprocess
+import base64
 
 app = Flask(__name__)
 
@@ -77,9 +78,18 @@ def login():
             cursor.execute(query)
             user = cursor.fetchone()
             if user:
-                # Vulnerable: Using only the username as a session token
-                session['username'] = user[1]
-                return redirect('/dashboard')
+                
+
+                response = make_response(redirect('/dashboard'))
+                # I don't use the user-provided username because I wanna allow SQL injection and auth :)
+                db_username = user[1]
+
+                # This looks sus but it's just encoding the data in b64 as a string
+                base64_auth = base64.b64encode(db_username.encode('utf-8')).decode('utf-8')
+
+                # Vulnerable: Using username in base64 (easily decode-able) as session token
+                response.set_cookie('Auth', base64_auth)
+                return response
             else:
                 error = 'Invalid username or password'
         except sqlite3.Error as e:
@@ -90,16 +100,21 @@ def login():
 # Dashboard page
 @app.route('/dashboard')
 def dashboard():
-    if 'username' not in session:
+    b64_username = request.cookies.get('Auth')  # Retrieve username from Auth cookie
+    username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
+    if not username:
         return redirect('/')
-
-    username = session['username']
+    
+    
     conn = get_db()
     cursor = conn.cursor()
 
     # Fetch user balance
     cursor.execute("SELECT balance FROM users WHERE username=?", (username,))
-    balance = cursor.fetchone()[0]
+    try:
+        balance = cursor.fetchone()[0]
+    except:
+        return redirect('/')
 
     # Vulnerable: Comments expose the username field, making brute forcing a lot easier
     cursor.execute("SELECT username, content FROM comments")
@@ -112,10 +127,11 @@ def dashboard():
 # Add a comment
 @app.route('/add_comment', methods=['POST'])
 def add_comment():
-    if 'username' not in session:
+    b64_username = request.cookies.get('Auth')  # Retrieve username from Auth cookie
+    username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
+    if not username:
         return redirect('/')
     
-    username = session['username']  # Assuming you store the user's ID in the session
     content = request.form['content']
 
     conn = get_db()
@@ -140,9 +156,13 @@ def register():
             # Vulnerable: passwords stored in plaintext in database
             cursor.execute("INSERT INTO users (username, password, balance) VALUES (?, ?, ?)", (username, password, balance))
             conn.commit()
-            # Vulnerable: Using only the username as a session token
-            session['username'] = username
-            return redirect('/dashboard')
+
+            response = make_response(redirect('/dashboard'))
+            # Vulnerable: Using username in base64 (easily decode-able) as session token
+            base64_auth = base64.b64encode(username.encode('utf-8')).decode('utf-8')
+            response.set_cookie('Auth', base64_auth)
+
+            return response
         except sqlite3.IntegrityError:
             # Vulnerable: exposes if a username is valid, allowing for username enumeration
             return render_template('register.html', error='Username already exists')
@@ -150,10 +170,12 @@ def register():
 
 @app.route('/delete_account', methods=['GET', 'POST'])
 def delete_account():
-    if 'username' not in session:
-        return redirect('/')
+    b64_username = request.cookies.get('Auth')  # Retrieve username from Auth cookie
+    username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
 
-    username = session['username']
+    if not username:
+        return redirect('/')
+    
     conn = get_db()
     cursor = conn.cursor()
 
@@ -162,10 +184,9 @@ def delete_account():
         cursor.execute("DELETE FROM users WHERE username=?", (username,))
         conn.commit()
 
-        # Clear the session to log the user out
-        session.clear()
-
-        return redirect('/')
+        response = make_response(redirect('/'))
+        response.set_cookie('Auth', '', expires=0)
+        return response
     except Exception as e:
         # Handle any errors that occur during the deletion process
         render_template('register.html', error="User not found")
@@ -174,7 +195,9 @@ def delete_account():
 # Transfer money page
 @app.route('/transfer', methods=['GET', 'POST'])
 def transfer():
-    if 'username' not in session:
+    b64_username = request.cookies.get('Auth')  # Retrieve username from Auth cookie
+    username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
+    if not username:
         return redirect('/')
     if request.method == 'POST':
         recipient = request.form['recipient']
@@ -184,7 +207,7 @@ def transfer():
             return render_template('transfer.html', error='Enter a number')
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute("SELECT balance FROM users WHERE username=?", (session['username'],))
+        cursor.execute("SELECT balance FROM users WHERE username=?", (username,))
         sender_balance = cursor.fetchone()[0]
         if sender_balance >= amount:
             cursor.execute("SELECT balance FROM users WHERE username=?", (recipient,))
@@ -197,7 +220,7 @@ def transfer():
                 cursor.execute("UPDATE users SET balance=? WHERE username=?", (recipient_balance + amount, recipient))
 
                 # Update sender's balance
-                cursor.execute("UPDATE users SET balance=? WHERE username=?", (sender_balance - amount, session['username']))
+                cursor.execute("UPDATE users SET balance=? WHERE username=?", (sender_balance - amount, username))
 
                 conn.commit()
                 return redirect('/dashboard')
@@ -205,28 +228,33 @@ def transfer():
                 # Vulnerable: exposes if a username is valid, allowing for username enumeration
                 return render_template('transfer.html', error='Receiver Account Not Found')
         else:
-            return render_template('transfer.html', error='Insufficient funds')
+            return render_template('transfer.html', error='You are too broke for that (womp womp)')
     return render_template('transfer.html')
 
 # Admin page
 @app.route('/admin')
 def admin():
-    # Vulnerable: 
-    if 'username' in session and session['username'] == 'admin':
+    b64_username = request.cookies.get('Auth')  # Retrieve username from Auth cookie
+    username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
+    if username and username == 'admin':
         conn = get_db()
         cursor = conn.cursor()
         # Vulnerable: admins should not be able to see all user's passwords
         cursor.execute("SELECT * FROM users")
         users = cursor.fetchall()
         return render_template('admin.html', users=users)
-    else:
+    else: 
         return render_template('error.html', error="You are not an admin (I think)")
+        
 
 
 # Admin update balance
 @app.route('/admin/update_balance', methods=['POST'])
 def update_balance():
-    if 'username' in session and session['username'] == 'admin':
+    # Vulnerable: checking administrator perms via weak auth cookie
+    b64_username = request.cookies.get('Auth')  # Retrieve username from Auth cookie
+    username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
+    if username and username == 'admin':
         username = request.form['username']
         new_balance = request.form['balance']
         try:
@@ -264,11 +292,11 @@ def subscribe():
 # Logout route
 @app.route('/logout')
 def logout():
-    # Vulnerable: we need to invalidate the user's old session
-    session.pop('username', None)
-    return redirect('/login')
+    # Clear the Auth cookie
+    response = make_response(redirect('/'))
+    response.set_cookie('Auth', '', expires=0)
+    return response
 
 if __name__ == '__main__':
     init_db()
     app.run(debug=True, port=1338)
-
