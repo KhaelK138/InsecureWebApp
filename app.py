@@ -208,17 +208,6 @@ def transfer():
             return render_template('transfer.html', error='Insufficient funds')
     return render_template('transfer.html')
 
-# Stocks page
-@app.route('/stocks')
-def stocks():
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT name, price FROM stocks")
-    stocks = cursor.fetchall()
-    return render_template('stocks.html', stocks=stocks)
-
-
-
 # Admin page
 @app.route('/admin')
 def admin():
