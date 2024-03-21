@@ -209,6 +209,7 @@ def transfer():
         cursor = conn.cursor()
         cursor.execute("SELECT balance FROM users WHERE username=?", (username,))
         sender_balance = cursor.fetchone()[0]
+        # Vulnerable: no check on negative amounts
         if sender_balance >= amount:
             cursor.execute("SELECT balance FROM users WHERE username=?", (recipient,))
 
@@ -234,6 +235,7 @@ def transfer():
 # Admin page
 @app.route('/admin')
 def admin():
+    # Vulnerable: checking administrative permissions via weak auth cookie
     b64_username = request.cookies.get('Auth')  # Retrieve username from Auth cookie
     username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
     if username and username == 'admin':
@@ -251,7 +253,7 @@ def admin():
 # Admin update balance
 @app.route('/admin/update_balance', methods=['POST'])
 def update_balance():
-    # Vulnerable: checking administrator perms via weak auth cookie
+    # Vulnerable: checking administrative permissions via weak auth cookie
     b64_username = request.cookies.get('Auth')  # Retrieve username from Auth cookie
     username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
     if username and username == 'admin':
@@ -293,6 +295,7 @@ def subscribe():
 @app.route('/logout')
 def logout():
     # Clear the Auth cookie
+    # Vulnerable: previous sessions not invalidated (mainly because they are the same each time)
     response = make_response(redirect('/'))
     response.set_cookie('Auth', '', expires=0)
     return response
