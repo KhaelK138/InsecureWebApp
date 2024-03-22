@@ -19,13 +19,13 @@
         </tr>
         {% for user in users %}
         <tr>
+            <td>{{ user[0] }}</td>
             <td>{{ user[1] }}</td>
-            <td>{{ user[2] }}</td>
-            <td>${{'%0.2f'| format(user[3]|float)}}</td>
+            <td>${{'%0.2f'| format(user[2]|float)}}</td>
             <td>
                 <form action="/admin/update_balance" method="post">
-                    <input type="hidden" name="username" value="{{ user[1] }}">
-                    <input type="number" name="balance" value="{{ user[3] }}">
+                    <input type="hidden" name="username" value="{{ user[0] }}">
+                    <input type="number" name="balance" value="{{ user[2] }}">
                     <input type="submit" value="Update Balance">
                 </form>
             </td>
