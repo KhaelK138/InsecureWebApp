@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, redirect, session
 import sqlite3
 import subprocess
 from flask_bcrypt import Bcrypt 
-import validate_email
+from validate_email import validate_email
 import re
 
 app = Flask(__name__)
@@ -142,6 +142,13 @@ def register():
         password = request.form['password']
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8') 
 
+        
+        valid_email = validate_email(email)
+        valid_email2 = check(email)
+
+        if not valid_email or not valid_email2:
+            return render_template('error.html', error="Enter a valid email")
+
         balance = 100
         conn = get_db()
         cursor = conn.cursor()
@@ -232,13 +239,13 @@ def stocks():
 def admin():
     # Fixed: administrative privileges from database
     username = session['username']
+    conn = get_db()
+    cursor = conn.cursor()
     cursor.execute("SELECT admin FROM users WHERE username=?", (username,))
     admin = True if cursor.fetchone()[0] else False
     if admin:
-        conn = get_db()
-        cursor = conn.cursor()
         # Fixed: only username, email, and balances are shown to admins
-        cursor.execute("SELECT (username,email,balance) FROM users")
+        cursor.execute("SELECT username,email,balance FROM users")
         users = cursor.fetchall()
         return render_template('admin_secure.html', users=users)
     else:
@@ -249,14 +256,14 @@ def admin():
 @app.route('/admin/update_balance', methods=['POST'])
 def update_balance():
     username = session['username']
+    conn = get_db()
+    cursor = conn.cursor()
     cursor.execute("SELECT admin FROM users WHERE username=?", (username,))
     admin = True if cursor.fetchone()[0] else False
     if admin:
         username = request.form['username']
         new_balance = request.form['balance']
         try:
-            conn = get_db()
-            cursor = conn.cursor()
             cursor.execute("UPDATE users SET balance=? WHERE username=?", (new_balance, username))
             conn.commit()
             return redirect('/admin')
@@ -290,6 +297,7 @@ def subscribe():
             error = f"Error: {result.stderr.strip()}"
 
         return render_template('index.html', error=error)
+    return render_template('error.html', error="Enter a valid email")
 
 # Logout route
 @app.route('/logout')
