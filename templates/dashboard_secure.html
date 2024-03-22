@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking App - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, {{ username }}!</h1>
+        <h2>Account Balance: ${{'%0.2f'| format(balance|float)}}</h2>
+        <div class="button-container">
+            <button onclick="location.href='/transfer'">Transfer Money</button>
+            <!-- Fixed: stocks has its own page -->
+            <button onclick="location.href='/stocks'">Stocks</button>
+            {% if is_admin %}
+                <button onclick="location.href='/admin'">Admin Panel</button>
+            {% endif %}
+            <button onclick="location.href='/logout'">Logout</button>
+            <button onclick="deleteAccount()">Delete Account</button>
+        </div>
+        <p><br><br><br></p>
+        
+    
+        <h2>Add a Comment:</h2>
+        <form action="/add_comment" method="post">
+            <textarea name="content" rows="4" cols="50"></textarea><br>
+            <input type="submit" value="Submit">
+        </form>
+    
+        <h2>Comments from our valued customers:</h2>
+        {% for comment in comments[::-1] %}
+            <div class="comment-box">
+                <strong>{{ comment[0] }}</strong>
+                <hr>
+                <!-- Fixed: comment content no longer marked safe -->
+                <!-- In other apps, this would be sanitizing the input -->
+                <p>{{ comment[1] }}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function deleteAccount() {
+            if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+                // If user confirms, redirect to the delete account route
+                window.location.href = '/delete_account';
+            } else {
+                // If user cancels, do nothing
+                return false;
+            }
+        }
+    </script>
+</body>
+</html>

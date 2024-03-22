@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure-Banking App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Secure-Banking!</h1>
+        <b><u>Security</u></b>
+        <p>We have the latest in security innovations, such as:</p>
+        <ul>
+            <li>No SQL injection</li>
+            <li>No XSS</li>
+            <li>No LFI</li>
+            <li>No Command Injection</li>
+            <li>No bad admin passwords</li>
+            <li>Non-leaked login credentials</li>
+            <li>No money stealing capabilities</li>
+            <li>No plaintext passwords stored</li>
+            <li>No username session tokens</li>
+            <li>No plaintext credentials</li>
+        </ul>
+        <button onclick="location.href='/login'">Login</button>
+        
+        <!-- Mailing List Subscription Form -->
+        <p><br><br><br><br><br></p>
+        <div class="mailing-list">
+            <h2>Join Our Mailing List</h2>
+            {% if error %}
+            <p>{{ error }}</p>
+            {% endif %}
+            <form action="/subscribe" method="post">
+                <label for="email">Email:</label><br>
+                <input id="email" type="email" name="email"><br>
+                <input type="submit" value="Subscribe">
+            </form>
+        </div>
+    </div>
+</body>
+</html>

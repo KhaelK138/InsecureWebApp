@@ -9,9 +9,10 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
     flex-direction: column;
+    padding-top: 20px; /* Add padding to the top of the container */
 }
+
 
 h1 {
     color: #333;
