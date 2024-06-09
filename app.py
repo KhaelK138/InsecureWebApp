@@ -2,6 +2,8 @@ from flask import Flask, request, render_template, redirect, send_file, make_res
 import sqlite3
 import subprocess
 import base64
+import pickle
+
 
 app = Flask(__name__)
 
@@ -73,6 +75,7 @@ def login():
         conn = get_db()
         cursor = conn.cursor()
         # Vulnerable: Directly concatenating user input into the SQL query
+        # SELECT * FROM users WHERE username='' OR 1=1;-- 'AND password = '';
         query = "SELECT * FROM users WHERE username='" + username + "' AND password='" + password + "'"
         try:
             cursor.execute(query)
@@ -192,6 +195,23 @@ def delete_account():
         render_template('register.html', error="User not found")
 
 
+@app.route('/insert', methods=['GET', 'POST'])
+def insert():
+    # Get the base64 encoded data from the form
+
+    if request.method == 'POST':
+        # try:
+            encoded_data = request.form.get('data')
+            decoded_data = base64.b64decode(encoded_data.encode('utf-8'))  # Convert to bytes and then decode base64
+            # Vulnerable: unpickling unsanitized user input
+            pickle.loads(decoded_data)
+            return render_template('pickle.html')
+        # except:
+        #     return render_template('error.html', error="Pickled data must be sent.")
+    else:
+        return render_template('error.html', error="This is an internal POST endpoint used for unpickling base64 databases.")
+
+    
 # Transfer money page
 @app.route('/transfer', methods=['GET', 'POST'])
 def transfer():
@@ -302,4 +322,4 @@ def logout():
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True, port=1338)
+    app.run(debug=True, port=5000)
