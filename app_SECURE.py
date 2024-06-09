@@ -188,6 +188,11 @@ def delete_account():
         # Handle any errors that occur during the deletion process
         render_template('register.html', error="User not found")
 
+@app.route('/insert', methods=['GET', 'POST'])
+def insert():
+    # Fixed: No more unpickling user data on hidden endpoint. 
+    return render_template('error.html', error='Unpickling user databases is no longer supported (and for good reason).')
+
 
 # Transfer money page
 @app.route('/transfer', methods=['GET', 'POST'])
