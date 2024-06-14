@@ -3,6 +3,7 @@ import sqlite3
 import subprocess
 import base64
 import pickle
+import argparse
 
 
 app = Flask(__name__)
@@ -310,7 +311,6 @@ def subscribe():
     return render_template('index.html', error=error)
 
 
-
 # Logout route
 @app.route('/logout')
 def logout():
@@ -320,6 +320,18 @@ def logout():
     response.set_cookie('Auth', '', expires=0)
     return response
 
+
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True, port=5000)
+
+    parser = argparse.ArgumentParser(description='Run the Flask application.')
+    parser.add_argument('mode', choices=['open', 'closed'], help='Specify whether the application should be open to all network interfaces or closed to localhost.')
+    parser.add_argument('-p', '--port', type=int, default=5000, help='Optional - port number to run the application on. Default is 5000.')
+
+    args = parser.parse_args()
+
+    host = '0.0.0.0' if args.mode == 'open' else '127.0.0.1'
+    port = args.port
+
+    app.run(debug=True, port=port, host=host)
+
