@@ -4,6 +4,7 @@ import subprocess
 from flask_bcrypt import Bcrypt 
 from validate_email import validate_email
 import re
+import argparse
 
 app = Flask(__name__)
 
@@ -314,5 +315,15 @@ def logout():
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True, port=1338)
+
+    parser = argparse.ArgumentParser(description='Run the Flask application.')
+    parser.add_argument('mode', choices=['open', 'closed'], help='Specify whether the application should be open to all network interfaces or closed to localhost.')
+    parser.add_argument('-p', '--port', type=int, default=5000, help='Optional - port number to run the application on. Default is 5000.')
+
+    args = parser.parse_args()
+
+    host = '0.0.0.0' if args.mode == 'open' else '127.0.0.1'
+    port = args.port
+
+    app.run(debug=True, port=port, host=host)
 
