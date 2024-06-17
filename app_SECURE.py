@@ -141,6 +141,9 @@ def register():
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
+        if password == "" or email == "" or username == "":
+            return render_template('register_secure.html', error='All fields must not be empty')
+
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8') 
 
         
@@ -153,8 +156,7 @@ def register():
         balance = 100
         conn = get_db()
         cursor = conn.cursor()
-        if password == "" or username == "":
-            return render_template('register_secure.html', error='All fields must not be empty')
+        
         try:
             cursor.execute("INSERT INTO users (username, email, password, balance) VALUES (?, ?, ?, ?)", (username, email, hashed_password, balance))
             conn.commit()
@@ -191,6 +193,8 @@ def delete_account():
 
 @app.route('/insert', methods=['GET', 'POST'])
 def insert():
+    if 'username' not in session:
+        return redirect('/')
     # Fixed: No more unpickling user data on hidden endpoint. 
     return render_template('error.html', error='Unpickling user databases is no longer supported (and for good reason).')
 
@@ -243,6 +247,8 @@ def stocks():
 # Admin page
 @app.route('/admin')
 def admin():
+    if 'username' not in session:
+        return redirect('/')
     # Fixed: administrative privileges from database
     username = session['username']
     conn = get_db()
@@ -261,6 +267,8 @@ def admin():
 # Admin update balance
 @app.route('/admin/update_balance', methods=['POST'])
 def update_balance():
+    if 'username' not in session:
+        return redirect('/')
     username = session['username']
     conn = get_db()
     cursor = conn.cursor()
@@ -308,6 +316,8 @@ def subscribe():
 # Logout route
 @app.route('/logout')
 def logout():
+    if 'username' not in session:
+        return redirect('/')
     # STILL VULNERABLE: flask sessions cannot be easily invalidated, so old sessions can still be used
     # TODO salt sessions?
     session.pop('username', None)
