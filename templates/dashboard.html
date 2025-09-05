@@ -17,9 +17,9 @@
                 <button onclick="location.href='/admin'">Admin Panel</button>
             {% endif %}
             <button onclick="location.href='/logout'">Logout</button>
-            <!-- Vulnerable: leftover  -->
+            <!-- Vulnerable: leftover debug code expost in comments -->
             <!-- <button onclick="location.href='/insert'">[Work In Progress] Send Pickled Databases</button> -->
-            <button onclick="location.href='/delete_account'">Delete Account</button>
+            <button onclick="deleteAccount()">Delete Account</button>
         </div>
         <p><br><br><br><br><br><br></p>
         
@@ -36,7 +36,7 @@
                 <strong>{{ comment[0] }}</strong>
                 <hr>
                 <!-- Vulnerable: adding |safe allows for HTML/JavaScript -->
-                <!-- This is abnormal, though. Most apps require sanitization, rather than providing it -->
+                <!-- This is abnormal, though. Most apps require sanitization, rather than providing it like flask, so this is simulating a lack of sanitization -->
                 <p>{{ comment[1]|safe }}</p>
             </div>
         {% endfor %}
@@ -45,12 +45,17 @@
     <script>
         function deleteAccount() {
             if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-                // If user confirms, redirect to the delete account route
-                window.location.href = '/delete_account';
-            } else {
-                // If user cancels, do nothing
-                return false;
-            }
+                const username = getCookie("Username");
+                window.location.href = '/delete_account?username=' + username;
+            } 
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            console.log(value);
+            const parts = value.split(`; ${name}=`);
+            console.log(parts);
+            if (parts.length === 2) return parts.pop().split(';').shift();
         }
     </script>
 </body>

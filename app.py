@@ -76,7 +76,7 @@ def login():
         conn = get_db()
         cursor = conn.cursor()
         # Vulnerable: Directly concatenating user input into the SQL query
-        # SELECT * FROM users WHERE username='' OR 1=1;-- 'AND password = '';
+        # For example: SELECT * FROM users WHERE username='' OR 1=1;-- 'AND password = '';
         query = "SELECT * FROM users WHERE username='" + username + "' AND password='" + password + "'"
         try:
             cursor.execute(query)
@@ -88,11 +88,12 @@ def login():
                 # I don't use the user-provided username because I wanna allow SQL injection and auth :)
                 db_username = user[1]
 
-                # This looks sus but it's just encoding the data in b64 as a string
+                # Vulnerable: Using username in base64 (easily decode-able) as session token
                 base64_auth = base64.b64encode(db_username.encode('utf-8')).decode('utf-8')
 
-                # Vulnerable: Using username in base64 (easily decode-able) as session token
+                # Vulnerable: Cookie does not have HttpOnly set to true, meaning it can be access and stolen via attacker-injected javascript
                 response.set_cookie('Auth', base64_auth)
+                response.set_cookie('Username', username)
                 return response
             else:
                 error = 'Invalid username or password'
@@ -105,9 +106,11 @@ def login():
 @app.route('/dashboard')
 def dashboard():
     b64_username = request.cookies.get('Auth')  # Retrieve username from Auth cookie
-    username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
-    if not username:
+
+    if not b64_username:
         return redirect('/')
+    
+    username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
     
     
     conn = get_db()
@@ -164,7 +167,10 @@ def register():
             response = make_response(redirect('/dashboard'))
             # Vulnerable: Using username in base64 (easily decode-able) as session token
             base64_auth = base64.b64encode(username.encode('utf-8')).decode('utf-8')
+
+            # Vulnerable: Cookie is not http-only, meaning it can be access and stolen via attacker-injected javascript
             response.set_cookie('Auth', base64_auth)
+            response.set_cookie('Username', username)
 
             return response
         except sqlite3.IntegrityError:
@@ -174,13 +180,13 @@ def register():
 
 @app.route('/delete_account', methods=['GET', 'POST'])
 def delete_account():
-    b64_username = request.cookies.get('Auth')  # Retrieve username from Auth cookie
-    username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
+    # Vulnerable: Username is attacker-controlled, and can be manipulated to delete other accounts by username
+    target_username = request.args.get('username')  
 
-    if not username:
+    if not target_username:
         return redirect('/')
     
-    if username == "admin":
+    if target_username == "admin":
         return render_template('error.html', error="No deleting admin user :p")
     
     conn = get_db()
@@ -188,7 +194,7 @@ def delete_account():
 
     try:
         # Delete the user account based on the provided username
-        cursor.execute("DELETE FROM users WHERE username=?", (username,))
+        cursor.execute("DELETE FROM users WHERE username=?", (target_username,))
         conn.commit()
 
         response = make_response(redirect('/'))
