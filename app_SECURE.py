@@ -4,26 +4,41 @@ import subprocess
 from flask_bcrypt import Bcrypt 
 from validate_email import validate_email
 import re
+import os
 import argparse
+import requests
 
 app = Flask(__name__)
 
 # hashing passwords
 bcrypt = Bcrypt(app) 
 
-# Fixed: stored secret key in config file. 
+
 configfile = open('./config/config.config', 'r')
 
-# Fixed: use flask's signed session tokens with a secret key
-app.secret_key = configfile.readline().strip()
+# Fixed: use flask's signed session tokens with a secret, randomly-generated key
+app.secret_key = os.urandom(20)
 
 # Path to SQLite database
 DATABASE = 'database_secure.db'
+
+RECAPTCHA_SECRET = configfile.readline().strip()
 
 # Admin stuff
 admin_username = configfile.readline().strip()
 admin_email = configfile.readline().strip()
 admin_password = configfile.readline().strip()
+
+def verify_recaptcha(token, action):
+    url = "https://www.google.com/recaptcha/api/siteverify"
+    payload = {
+        'secret': RECAPTCHA_SECRET,
+        'response': token
+    }
+    r = requests.post(url, data=payload)
+    result = r.json()
+    return result.get("success", False) and result.get("action") == action and result.get("score", 0) > 0.5
+
 
 # Initialize database schema
 def init_db():
@@ -75,7 +90,9 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-       
+        token = request.form.get("g-recaptcha-response")
+        if not verify_recaptcha(token, "register"):
+            return render_template("register_secure.html", error="reCAPTCHA failed")
         conn = get_db()
         cursor = conn.cursor()
         # Fixed: no more SQL injection
@@ -141,6 +158,9 @@ def register():
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
+        token = request.form.get("g-recaptcha-response")
+        if not verify_recaptcha(token, "register"):
+            return render_template("register_secure.html", error="reCAPTCHA failed")
         if password == "" or email == "" or username == "":
             return render_template('register_secure.html', error='All fields must not be empty')
 
@@ -164,8 +184,7 @@ def register():
             session['username'] = username
             return redirect('/dashboard')
         except sqlite3.IntegrityError:
-            # Fixed: enumerating for emails is much more difficult
-            # TODO add captcha to prevent brute forces
+            # Fixed: added captcha
             return render_template('register_secure.html', error='Email or Username already exists')
     return render_template('register_secure.html')
 
