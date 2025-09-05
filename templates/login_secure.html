@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>Login</title>
+    <!-- Non-sensitive reCAPTCHA site key  -->
+    <script src="https://www.google.com/recaptcha/api.js?render=6LdJs74rAAAAAJeXT4x3v1NLkwmS4O0iVrsbPJbV"></script>
 </head>
 <body>
     <div class="container">
@@ -17,11 +19,24 @@
             <input type="email" id="email" name="email"><br>
             <label for="password">Password:</label><br>
             <input type="password" id="password" name="password"><br>
+            <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response">
             <br>
             <button type="submit">Login</button>
         </form>
         <p>Need an account? <a href="/register">Register here</a></p>
         
+        <script>
+        grecaptcha.ready(function() {
+            document.getElementById('login-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                // Non-sensitive reCAPTCHA site key
+                grecaptcha.execute('6LdJs74rAAAAAJeXT4x3v1NLkwmS4O0iVrsbPJbV', {action: 'login'}).then(function(token) {
+                    document.getElementById('g-recaptcha-response').value = token;
+                    e.target.submit();
+                });
+            });
+        });
+        </script>
     </div>
 </body>
 </html>

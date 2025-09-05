@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>Register</title>
+    <!-- Non-sensitive reCAPTCHA site key  -->
+    <script src="https://www.google.com/recaptcha/api.js?render=6LdJs74rAAAAAJeXT4x3v1NLkwmS4O0iVrsbPJbV"></script>
 </head>
 <body>
     <div class="container">
@@ -20,6 +22,7 @@
             <input id="email" type="email" name="email"><br>
             <label for="password">Password:</label><br>
             <input type="password" id="password" name="password"><br>
+            <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response">
             <br>
             <button type="submit">Register</button>
         </form>
