@@ -24,7 +24,7 @@ def init_db():
         cursor = db.cursor()
         # Vulnerable: plaintext secrets; bad Administrator password
         admin_username = "admin"
-        admin_password = "admin" 
+        admin_password = "123456" 
         cursor.execute("SELECT COUNT(*) FROM users")
         if not cursor.fetchone()[0]:
             cursor.execute("INSERT INTO users (username, password, balance) VALUES (?, ?, ?)", (admin_username, admin_password, 1338))
@@ -50,68 +50,29 @@ def get_db():
     db = sqlite3.connect(DATABASE)
     return db
 
-@app.route('/', methods=['GET', 'POST'])
-def serve_file():
-    # Vulnerable: getting arbitrary file path from user and serving the file
-    file_param = request.args.get('page')
+def validate_user(b64_username):
+    if not b64_username:
+        return False
 
-    # Check if the 'file' parameter is present
-    if file_param:
-        try:
-            # Serve the specified file
-            return send_file(file_param)
-        except Exception as e:
-            # Handle exceptions, log, or customize error response
-            return f"Error: {str(e)}"
-    else:
-        return render_template('index.html')
+    try:
+        username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
+    except:
+        return False
 
+    conn = get_db()
+    cursor = conn.cursor()
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    error = None
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        conn = get_db()
-        cursor = conn.cursor()
-        # Vulnerable: Directly concatenating user input into the SQL query
-        # For example: SELECT * FROM users WHERE username='' OR 1=1;-- 'AND password = '';
-        query = "SELECT * FROM users WHERE username='" + username + "' AND password='" + password + "'"
-        try:
-            cursor.execute(query)
-            user = cursor.fetchone()
-            if user:
-                
-
-                response = make_response(redirect('/dashboard'))
-                # I don't use the user-provided username because I wanna allow SQL injection and auth :)
-                db_username = user[1]
-
-                # Vulnerable: Using username in base64 (easily decode-able) as session token
-                base64_auth = base64.b64encode(db_username.encode('utf-8')).decode('utf-8')
-
-                # Vulnerable: Cookie does not have HttpOnly set to true, meaning it can be access and stolen via attacker-injected javascript
-                response.set_cookie('Auth', base64_auth)
-                response.set_cookie('Username', username)
-                return response
-            else:
-                error = 'Invalid username or password'
-        except sqlite3.Error as e:
-            error = f"{str(e)}"
-    return render_template('login.html', error=error)
-
+    cursor.execute("SELECT id FROM users WHERE username=?", (username,))
+    return username if cursor.fetchone()[0] else False
+    
 
 # Dashboard page
 @app.route('/dashboard')
 def dashboard():
-    b64_username = request.cookies.get('Auth')  # Retrieve username from Auth cookie
-
-    if not b64_username:
+    b64_username = request.cookies.get('Auth') 
+    username = validate_user(b64_username)
+    if not username:
         return redirect('/')
-    
-    username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
-    
     
     conn = get_db()
     cursor = conn.cursor()
@@ -134,8 +95,8 @@ def dashboard():
 # Add a comment
 @app.route('/add_comment', methods=['POST'])
 def add_comment():
-    b64_username = request.cookies.get('Auth')  # Retrieve username from Auth cookie
-    username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
+    b64_username = request.cookies.get('Auth') 
+    username = validate_user(b64_username)
     if not username:
         return redirect('/')
     
@@ -148,39 +109,15 @@ def add_comment():
 
     return redirect('/dashboard')
 
-# Register page
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        balance = 100
-        conn = get_db()
-        cursor = conn.cursor()
-        if password == "" or username == "":
-            return render_template('register.html', error='Both fields must not be empty')
-        try:
-            # Vulnerable: passwords stored in plaintext in database
-            cursor.execute("INSERT INTO users (username, password, balance) VALUES (?, ?, ?)", (username, password, balance))
-            conn.commit()
-
-            response = make_response(redirect('/dashboard'))
-            # Vulnerable: Using username in base64 (easily decode-able) as session token
-            base64_auth = base64.b64encode(username.encode('utf-8')).decode('utf-8')
-
-            # Vulnerable: Cookie is not http-only, meaning it can be access and stolen via attacker-injected javascript
-            response.set_cookie('Auth', base64_auth)
-            response.set_cookie('Username', username)
-
-            return response
-        except sqlite3.IntegrityError:
-            # Vulnerable: exposes if a username is valid, allowing for username enumeration
-            return render_template('register.html', error='Username already exists')
-    return render_template('register.html')
 
 @app.route('/delete_account', methods=['GET', 'POST'])
 def delete_account():
-    # Vulnerable: Username is attacker-controlled, and can be manipulated to delete other accounts by username
+    b64_username = request.cookies.get('Auth') 
+    username = validate_user(b64_username)
+    if not username:
+        return redirect('/')
+    
+    # Vulnerable: Username parameter is attacker-controlled, and can be manipulated to delete other accounts by username
     target_username = request.args.get('username')  
 
     if not target_username:
@@ -207,8 +144,12 @@ def delete_account():
 
 @app.route('/insert', methods=['GET', 'POST'])
 def insert():
-    # Get the base64 encoded data from the form
+    b64_username = request.cookies.get('Auth') 
+    username = validate_user(b64_username)
+    if not username:
+        return redirect('/')
 
+    # Get the base64 encoded data from the form
     if request.method == 'POST':
         # try:
             encoded_data = request.form.get('data')
@@ -225,10 +166,11 @@ def insert():
 # Transfer money page
 @app.route('/transfer', methods=['GET', 'POST'])
 def transfer():
-    b64_username = request.cookies.get('Auth')  # Retrieve username from Auth cookie
-    username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
+    b64_username = request.cookies.get('Auth') 
+    username = validate_user(b64_username)
     if not username:
         return redirect('/')
+
     if request.method == 'POST':
         recipient = request.form['recipient']
         try: 
@@ -266,9 +208,12 @@ def transfer():
 @app.route('/admin')
 def admin():
     # Vulnerable: checking administrative permissions via weak auth cookie
-    b64_username = request.cookies.get('Auth')  # Retrieve username from Auth cookie
-    username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
-    if username and username == 'admin':
+    b64_username = request.cookies.get('Auth') 
+    username = validate_user(b64_username)
+    if not username:
+        return redirect('/')
+
+    if username == 'admin':
         conn = get_db()
         cursor = conn.cursor()
         # Vulnerable: admins should not be able to see all user's passwords
@@ -284,9 +229,13 @@ def admin():
 @app.route('/admin/update_balance', methods=['POST'])
 def update_balance():
     # Vulnerable: checking administrative permissions via weak auth cookie
-    b64_username = request.cookies.get('Auth')  # Retrieve username from Auth cookie
-    username = base64.b64decode(b64_username.encode('utf-8')).decode('utf-8')
-    if username and username == 'admin':
+    b64_username = request.cookies.get('Auth') 
+    username = validate_user(b64_username)
+    if not username:
+        return redirect('/')
+
+
+    if username == 'admin':
         username = request.form['username']
         new_balance = request.form['balance']
         try:
@@ -300,6 +249,96 @@ def update_balance():
             return render_template('error.html', error=error)
     else:
         return redirect('/')
+
+
+
+# Unauthenticated Pages
+
+@app.route('/', methods=['GET', 'POST'])
+def serve_file():
+    # Vulnerable: getting arbitrary file path from user and serving the file
+    file_param = request.args.get('page')
+
+    # Check if the 'file' parameter is present
+    if file_param:
+        # Ensure user is authed since this originates from the authenticated stocks page
+
+        b64_username = request.cookies.get('Auth') 
+        username = validate_user(b64_username)
+        if not username:
+            return redirect('/')
+
+        try:
+            # Serve the specified file
+            return send_file(file_param)
+        except Exception as e:
+            # Handle exceptions, log, or customize error response
+            return f"Error: {str(e)}"
+    else:
+        return render_template('index.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        conn = get_db()
+        cursor = conn.cursor()
+        # Vulnerable: Directly concatenating user input into the SQL query
+        # For example: SELECT * FROM users WHERE username='' OR 1=1;-- 'AND password = '';
+        query = "SELECT * FROM users WHERE username='" + username + "' AND password='" + password + "'"
+        try:
+            cursor.execute(query)
+            user = cursor.fetchone()
+            if user:
+                
+                response = make_response(redirect('/dashboard'))
+                
+                db_username = user[1]
+
+                # Vulnerable: Using username in base64 (easily decode-able) as session token
+                base64_auth = base64.b64encode(db_username.encode('utf-8')).decode('utf-8')
+
+                # Vulnerable: Cookie does not have HttpOnly set to true, meaning it can be access and stolen via attacker-injected javascript
+                response.set_cookie('Auth', base64_auth)
+                response.set_cookie('Username', username)
+                return response
+            else:
+                error = 'Invalid username or password'
+        except sqlite3.Error as e:
+            error = f"{str(e)}"
+    return render_template('login.html', error=error)
+
+# Register page
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        balance = 100
+        conn = get_db()
+        cursor = conn.cursor()
+        if password == "" or username == "":
+            return render_template('register.html', error='Both fields must not be empty')
+        try:
+            # Vulnerable: passwords stored in plaintext in database
+            cursor.execute("INSERT INTO users (username, password, balance) VALUES (?, ?, ?)", (username, password, balance))
+            conn.commit()
+
+            response = make_response(redirect('/dashboard'))
+            # Vulnerable: Using username in base64 (easily decode-able) as session token
+            base64_auth = base64.b64encode(username.encode('utf-8')).decode('utf-8')
+
+            # Vulnerable: Cookie is not http-only, meaning it can be access and stolen via attacker-injected javascript
+            response.set_cookie('Auth', base64_auth)
+            response.set_cookie('Username', username)
+
+            return response
+        except sqlite3.IntegrityError:
+            # Vulnerable: exposes if a username is valid, allowing for username enumeration
+            return render_template('register.html', error='Username already exists')
+    return render_template('register.html')
 
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
@@ -342,5 +381,6 @@ if __name__ == '__main__':
     host = '0.0.0.0' if args.mode == 'open' else '127.0.0.1'
     port = args.port
 
+    # Vulnerable: debugging enabled, revealing sensitive source code, a python console, and app information
     app.run(debug=True, port=port, host=host)
 

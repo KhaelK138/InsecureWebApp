@@ -74,44 +74,8 @@ def init_db():
 def get_db():
     db = sqlite3.connect(DATABASE)
     return db
- 
 
-@app.route('/')
-def serve_file():
-    # Fixed: no more serving arbitrary files from URL parameters
-    # /stocks is now its own page
-    
-    return render_template('index_secure.html')
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    error = None
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        token = request.form.get("g-recaptcha-response")
-        if not verify_recaptcha(token, "register"):
-            return render_template("register_secure.html", error="reCAPTCHA failed")
-        conn = get_db()
-        cursor = conn.cursor()
-        # Fixed: no more SQL injection
-        try:
-            cursor.execute("SELECT * FROM users WHERE email=?", (email,))
-            user = cursor.fetchone()
-            if user:
-
-                is_valid = bcrypt.check_password_hash(user[3], password) 
-                if is_valid:
-                    session['username'] = user[1]
-                    return redirect('/dashboard')
-                error = 'Invalid email or password'
-            else:
-                error = 'Invalid email or password'
-        except sqlite3.Error as e:
-            error = f"{str(e)}"
-    return render_template('login_secure.html', error=error)
-
+# Authenticated pages:
 
 # Dashboard page
 @app.route('/dashboard')
@@ -150,44 +114,6 @@ def add_comment():
     conn.commit()
 
     return redirect('/dashboard')
-
-# Register page
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        password = request.form['password']
-        token = request.form.get("g-recaptcha-response")
-        if not verify_recaptcha(token, "register"):
-            return render_template("register_secure.html", error="reCAPTCHA failed")
-        if password == "" or email == "" or username == "":
-            return render_template('register_secure.html', error='All fields must not be empty')
-
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8') 
-
-        
-        valid_email = validate_email(email)
-        valid_email2 = check(email)
-
-        if not valid_email or not valid_email2:
-            return render_template('error.html', error="Enter a valid email")
-
-        balance = 100
-        conn = get_db()
-        cursor = conn.cursor()
-        
-        try:
-            cursor.execute("INSERT INTO users (username, email, password, balance) VALUES (?, ?, ?, ?)", (username, email, hashed_password, balance))
-            conn.commit()
-            # Fixed: uses flask's secure sessions with a secret key
-            # Fixed: flask will automatically set the cookie to "HttpOnly: true", preventing XSS cookie-theft attacks
-            session['username'] = username
-            return redirect('/dashboard')
-        except sqlite3.IntegrityError:
-            # Fixed: added captcha
-            return render_template('register_secure.html', error='Email or Username already exists')
-    return render_template('register_secure.html')
 
 @app.route('/delete_account', methods=['GET', 'POST'])
 def delete_account():
@@ -263,6 +189,8 @@ def transfer():
 # Fixed: Stocks has its own page
 @app.route('/stocks')
 def stocks():
+    if 'username' not in session:
+        return redirect('/')
     return render_template('stocks.html', stocks=stocks)
 
 # Admin page
@@ -307,7 +235,86 @@ def update_balance():
     else:
         return redirect('/')
 
- 
+
+
+# Unauthenticated Pages
+
+
+
+@app.route('/')
+def serve_file():
+    # Fixed: no more serving arbitrary files from URL parameters
+    # /stocks is now its own page
+    
+    return render_template('index_secure.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        token = request.form.get("g-recaptcha-response")
+        if not verify_recaptcha(token, "register"):
+            return render_template("register_secure.html", error="reCAPTCHA failed")
+        conn = get_db()
+        cursor = conn.cursor()
+        # Fixed: no more SQL injection
+        try:
+            cursor.execute("SELECT * FROM users WHERE email=?", (email,))
+            user = cursor.fetchone()
+            if user:
+
+                is_valid = bcrypt.check_password_hash(user[3], password) 
+                if is_valid:
+                    session['username'] = user[1]
+                    return redirect('/dashboard')
+                error = 'Invalid email or password'
+            else:
+                error = 'Invalid email or password'
+        except sqlite3.Error as e:
+            error = f"{str(e)}"
+    return render_template('login_secure.html', error=error)
+
+# Register page
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        token = request.form.get("g-recaptcha-response")
+        if not verify_recaptcha(token, "register"):
+            return render_template("register_secure.html", error="reCAPTCHA failed")
+        if password == "" or email == "" or username == "":
+            return render_template('register_secure.html', error='All fields must not be empty')
+
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8') 
+
+        
+        valid_email = validate_email(email)
+        valid_email2 = check(email)
+
+        if not valid_email or not valid_email2:
+            return render_template('error.html', error="Enter a valid email")
+
+        balance = 100
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute("INSERT INTO users (username, email, password, balance) VALUES (?, ?, ?, ?)", (username, email, hashed_password, balance))
+            conn.commit()
+            # Fixed: uses flask's secure sessions with a secret key
+            # Fixed: flask will automatically set the cookie to "HttpOnly: true", preventing XSS cookie-theft attacks
+            session['username'] = username
+            return redirect('/dashboard')
+        except sqlite3.IntegrityError:
+            # Fixed: added captcha
+            return render_template('register_secure.html', error='Email or Username already exists')
+    return render_template('register_secure.html')
+
 # Validate email with Regex function--GeeksForGeeks
 def check(email):
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
@@ -323,8 +330,7 @@ def subscribe():
     valid_email2 = check(email)
 
     if valid_email and valid_email2:
-        command = f"echo Subscribed {email}."
-        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        result = subprocess.run(["echo", f"Subscribed {email}"], shell=True, capture_output=True, text=True)
 
         if result.returncode == 0:
             error = f"Success: {result.stdout.strip()}"
