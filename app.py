@@ -4,6 +4,7 @@ import subprocess
 import base64
 import pickle
 import argparse
+import os
 
 
 app = Flask(__name__)
@@ -16,6 +17,7 @@ DATABASE = 'database.db'
 
 # Initialize database schema
 def init_db():
+    os.remove("database.db")
     with app.app_context():
         db = get_db()
         with app.open_resource('schema.sql', mode='r') as f:
@@ -63,7 +65,7 @@ def validate_user(b64_username):
     cursor = conn.cursor()
 
     cursor.execute("SELECT id FROM users WHERE username=?", (username,))
-    return username if cursor.fetchone()[0] else False
+    return username if cursor.fetchone() else False
     
 
 # Dashboard page
