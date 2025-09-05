@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banking App - Dashboard</title>
+    <title>Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -19,7 +19,7 @@
             <button onclick="location.href='/logout'">Logout</button>
             <!-- Vulnerable: leftover  -->
             <!-- <button onclick="location.href='/insert'">[Work In Progress] Send Pickled Databases</button> -->
-            <button onclick="deleteAccount()">Delete Account</button>
+            <button onclick="location.href='/delete_account'">Delete Account</button>
         </div>
         <p><br><br><br><br><br><br></p>
         

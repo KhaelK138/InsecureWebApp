@@ -1,9 +1,13 @@
 body {
+    background: linear-gradient(135deg, #f8fafc 0%, #2d5aa0 100%);
     font-family: Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
     background-color: #f4f4f4;
     margin: 0;
     padding: 0;
 }
+
 
 .container {
     display: flex;
