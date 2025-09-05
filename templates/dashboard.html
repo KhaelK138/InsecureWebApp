@@ -12,7 +12,7 @@
         <h2>Account Balance: ${{'%0.2f'| format(balance|float)}}</h2>
         <div class="button-container">
             <button onclick="location.href='/transfer'">Transfer Money</button>
-            <button onclick="location.href='/?page=./templates/stocks.html'">Stocks</button>
+            <button onclick="location.href='/?page=templates/stocks.html'">Stocks</button>
             {% if is_admin %}
                 <button onclick="location.href='/admin'">Admin Panel</button>
             {% endif %}
