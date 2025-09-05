@@ -50,7 +50,7 @@ def get_db():
     db = sqlite3.connect(DATABASE)
     return db
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def serve_file():
     # Vulnerable: getting arbitrary file path from user and serving the file
     file_param = request.args.get('page')
