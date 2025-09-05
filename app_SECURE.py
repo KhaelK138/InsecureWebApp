@@ -354,5 +354,5 @@ if __name__ == '__main__':
     host = '0.0.0.0' if args.mode == 'open' else '127.0.0.1'
     port = args.port
 
-    app.run(debug=True, port=port, host=host)
+    app.run(debug=False, port=port, host=host)
 
