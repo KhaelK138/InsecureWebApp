@@ -180,6 +180,9 @@ def delete_account():
     if not username:
         return redirect('/')
     
+    if username == "admin":
+        return render_template('error.html', error="No deleting admin user :p")
+    
     conn = get_db()
     cursor = conn.cursor()
 
