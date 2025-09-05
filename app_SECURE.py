@@ -181,6 +181,7 @@ def register():
             cursor.execute("INSERT INTO users (username, email, password, balance) VALUES (?, ?, ?, ?)", (username, email, hashed_password, balance))
             conn.commit()
             # Fixed: uses flask's secure sessions with a secret key
+            # Fixed: flask will automatically set the cookie to "HttpOnly: true", preventing XSS cookie-theft attacks
             session['username'] = username
             return redirect('/dashboard')
         except sqlite3.IntegrityError:
@@ -190,6 +191,7 @@ def register():
 
 @app.route('/delete_account', methods=['GET', 'POST'])
 def delete_account():
+    # Fixed: uses session's username, rather than user-supplied username
     if 'username' not in session:
         return redirect('/')
 
