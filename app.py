@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, redirect, send_file, make_response
 from datetime import timedelta
+import numbers
 import sqlite3
 import subprocess
 import base64
@@ -75,7 +76,7 @@ def dashboard():
     b64_username = request.cookies.get('Auth') 
     username = validate_user(b64_username)
     if not username:
-        return redirect('/')
+        return redirect('/login')
     
     conn = get_db()
     cursor = conn.cursor()
@@ -85,7 +86,7 @@ def dashboard():
     try:
         balance = cursor.fetchone()[0]
     except:
-        return redirect('/')
+        return redirect('/login')
 
     # Vulnerable: Comments expose the username field, making brute forcing a lot easier
     cursor.execute("SELECT username, content FROM comments")
@@ -101,9 +102,11 @@ def add_comment():
     b64_username = request.cookies.get('Auth') 
     username = validate_user(b64_username)
     if not username:
-        return redirect('/')
+        return redirect('/login')
     
     content = request.form['content']
+    if not content:
+        return render_template('error.html', error="Gotta submit something pal")
 
     conn = get_db()
     cursor = conn.cursor()
@@ -118,13 +121,13 @@ def delete_account():
     b64_username = request.cookies.get('Auth') 
     username = validate_user(b64_username)
     if not username:
-        return redirect('/')
+        return redirect('/login')
     
     # Vulnerable: Username parameter is attacker-controlled, and can be manipulated to delete other accounts by username
     target_username = request.args.get('username')  
 
     if not target_username:
-        return redirect('/')
+        return redirect('/login')
     
     if target_username == "admin":
         return render_template('error.html', error="No deleting admin user :p")
@@ -137,7 +140,7 @@ def delete_account():
         cursor.execute("DELETE FROM users WHERE username=?", (target_username,))
         conn.commit()
 
-        response = make_response(redirect('/'))
+        response = make_response(redirect('/login'))
         response.set_cookie('Auth', '', expires=0)
         return response
     except Exception as e:
@@ -150,7 +153,7 @@ def insert():
     b64_username = request.cookies.get('Auth') 
     username = validate_user(b64_username)
     if not username:
-        return redirect('/')
+        return redirect('/login')
 
     # Get the base64 encoded data from the form
     if request.method == 'POST':
@@ -172,7 +175,7 @@ def transfer():
     b64_username = request.cookies.get('Auth') 
     username = validate_user(b64_username)
     if not username:
-        return redirect('/')
+        return redirect('/login')
 
     if request.method == 'POST':
         recipient = request.form['recipient']
@@ -214,7 +217,7 @@ def admin():
     b64_username = request.cookies.get('Auth') 
     username = validate_user(b64_username)
     if not username:
-        return redirect('/')
+        return redirect('/login')
 
     if username == 'admin':
         conn = get_db()
@@ -235,12 +238,13 @@ def update_balance():
     b64_username = request.cookies.get('Auth') 
     username = validate_user(b64_username)
     if not username:
-        return redirect('/')
-
+        return redirect('/login')
 
     if username == 'admin':
         username = request.form['username']
         new_balance = request.form['balance']
+        if not isinstance(new_balance, numbers.Number):
+            return render_template('error.html', error="What were you even trying to do???")
         try:
             conn = get_db()
             cursor = conn.cursor()
@@ -251,7 +255,7 @@ def update_balance():
             error = f"An error occurred: {str(e)}"
             return render_template('error.html', error=error)
     else:
-        return redirect('/')
+        return redirect('/login')
 
 
 
@@ -269,7 +273,7 @@ def serve_file():
         b64_username = request.cookies.get('Auth') 
         username = validate_user(b64_username)
         if not username:
-            return redirect('/')
+            return redirect('/login')
 
         try:
             # Serve the specified file
@@ -318,6 +322,7 @@ def login():
 def register():
     if request.method == 'POST':
         username = request.form['username']
+        # Vulnerable: Allow weak application passwords
         password = request.form['password']
         balance = 100
         conn = get_db()
@@ -367,7 +372,7 @@ def subscribe():
 def logout():
     # Clear the Auth cookie
     # Vulnerable: previous sessions not invalidated (mainly because they are the same each time)
-    response = make_response(redirect('/'))
+    response = make_response(redirect('/login'))
     response.set_cookie('Auth', '', expires=0)
     return response
 
