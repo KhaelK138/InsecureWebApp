@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, redirect, session
+from datetime import timedelta
 import sqlite3
 import subprocess
 from flask_bcrypt import Bcrypt 
@@ -18,6 +19,7 @@ configfile = open('./config/config.config', 'r')
 
 # Fixed: use flask's signed session tokens with a secret, randomly-generated key
 app.secret_key = os.urandom(20)
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = timedelta(days=1)
 
 # Path to SQLite database
 DATABASE = 'database_secure.db'
