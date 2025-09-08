@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, redirect, send_file, make_response
+from datetime import timedelta
 import sqlite3
 import subprocess
 import base64
@@ -6,11 +7,11 @@ import pickle
 import argparse
 import os
 
-
 app = Flask(__name__)
 
 # Vulnerable: Plaintext Secrets
 app.secret_key = 'super_secret_auth_key'
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = timedelta(days=1)
 
 # Path to SQLite database
 DATABASE = 'database.db'
