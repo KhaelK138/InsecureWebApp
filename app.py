@@ -19,7 +19,8 @@ DATABASE = 'database.db'
 
 # Initialize database schema
 def init_db():
-    os.remove("database.db")
+    if os.path.exists("database.db"):
+        os.remove("database.db")
     with app.app_context():
         db = get_db()
         with app.open_resource('schema.sql', mode='r') as f:
