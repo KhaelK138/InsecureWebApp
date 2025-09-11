@@ -2,7 +2,7 @@
 
 This is a vulnerable banking application, meant for practicing exploitation of web vulnerabilities. 
 
-The secure version (app_SECURE.py) has most of the vulnerabilities fixed, with the exception of flask session tokens not being invalidated and account email enumeration still existing. It demonstrates how many of the vulnerabilities can be remediated. 
+The secure version (app_SECURE.py) has most of the vulnerabilities fixed, with the exception of flask session tokens not being invalidated and account email enumeration still existing (albeit with reCAPTCHA sort of implemented). It demonstrates how many of the vulnerabilities can be remediated. 
 
 Don't host this app publicly without ensuring anyone that can access it is trusted. You'll have a bad day.
 
