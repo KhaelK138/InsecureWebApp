@@ -8,6 +8,7 @@
     
 </head>
 <body>
+    {% include 'nav.html' %}
     <div class="container">
         <h1>Transfer Money</h1>
         {% if error %}
@@ -21,8 +22,6 @@
             <br>
             <button onclick=submit()>Transfer</button>
         </form>
-        <br>
-        <a href="/dashboard">Back to Dashboard</a>
     </div>
     
 </body>

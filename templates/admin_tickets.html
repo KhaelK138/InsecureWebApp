@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Tickets</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% include 'nav.html' %}
+    <div class="container">
+        <h1>Support Tickets</h1>
+        <p><a href="/admin">Back to Admin Panel</a></p>
+        <table border="1">
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Subject</th>
+                <th>Message</th>
+                <th>Response</th>
+                <th>Submitted</th>
+                <th>Action</th>
+            </tr>
+            {% for ticket in tickets %}
+            <tr>
+                <td>{{ ticket[0] }}</td>
+                <td>{{ ticket[1] }}</td>
+                <td>{{ ticket[2] }}</td>
+                <td>{{ ticket[3][:80] }}{% if ticket[3]|length > 80 %}...{% endif %}</td>
+                <td>{{ ticket[4] if ticket[4] else '-' }}</td>
+                <td>{{ ticket[5] }}</td>
+                <td>
+                    <form action="/admin/respond_ticket" method="post" style="display: flex; gap: 4px;">
+                        <input type="hidden" name="ticket_id" value="{{ ticket[0] }}">
+                        <input type="text" name="response" placeholder="Response..." value="{{ ticket[4] if ticket[4] else '' }}" style="width: 150px;">
+                        <button type="submit">Send</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

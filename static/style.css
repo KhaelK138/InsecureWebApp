@@ -10,11 +10,11 @@ body {
 
 
 .container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    padding-top: 20px; /* Add padding to the top of the container */
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 16px;
+    box-sizing: border-box;
 }
 
 
@@ -35,8 +35,6 @@ button {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin: 0 auto; /* Center the button horizontally */
-    display: block; /* Ensure the button takes up the full width */
 }
 
 button:hover {
@@ -67,4 +65,74 @@ button:hover {
 .button-container button {
     margin-right: 10px; /* Add spacing between buttons */
     display: inline-block; /* Display buttons inline */
+}
+
+.navbar {
+    background-color: #fff;
+    padding: 10px 20px;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-brand {
+    font-weight: bold;
+    font-size: 18px;
+    color: #333;
+}
+
+.nav-links a {
+    margin-left: 10px;
+    text-decoration: none;
+    color: #fff;
+    background-color: #007bff;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.nav-links a:hover {
+    background-color: #0056b3;
+    text-decoration: none;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.dashboard-card {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 15px;
+    text-align: center;
+}
+
+.dashboard-card img {
+    max-width: 100%;
+    height: auto;
+}
+
+.dashboard-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+}
+
+.profile-section {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
 }

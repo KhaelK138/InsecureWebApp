@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% include 'nav.html' %}
+    <div class="container">
+        <h2>Profile</h2>
+        <div class="profile-grid">
+            <div class="profile-section">
+                <h3>Profile Settings</h3>
+                <form action="/profile" method="post">
+                    <label for="display_name">Display Name:</label><br>
+                    <input type="text" id="display_name" name="display_name" value="{{ display_name }}"><br>
+                    <label for="email">Email:</label><br>
+                    <input type="text" id="email" name="email" value="{{ email }}"><br>
+                    <br>
+                    <button onclick=submit()>Save</button>
+                </form>
+            </div>
+
+            <div class="profile-section">
+                <h3>Upload Profile Picture</h3>
+                <img src="{{ profile_pic }}" alt="Profile Picture" width="100" height="100" style="border-radius: 50%; object-fit: cover; margin-bottom: 10px;">
+                {% if upload_error %}
+                <p style="color:red;">{{ upload_error }}</p>
+                {% endif %}
+                {% if upload_success %}
+                <p style="color:green;">{{ upload_success }}</p>
+                {% endif %}
+                <form action="/upload" method="post" enctype="multipart/form-data">
+                    <label for="file">Choose a file:</label><br>
+                    <input type="file" id="file" name="file"><br>
+                    <br>
+                    <button onclick=submit()>Upload</button>
+                </form>
+            </div>
+
+            <div class="profile-section">
+                <h3>Change Password</h3>
+                <p>Generate a password reset token to change your password.</p>
+                <form action="/change_password" method="post">
+                    <button onclick=submit()>Generate Reset Token</button>
+                </form>
+            </div>
+
+            <div class="profile-section">
+                <h3>Delete Account</h3>
+                <p>Permanently delete your account. This cannot be undone.</p>
+                <a href="/delete_account" onclick="return confirm('Are you sure? This cannot be undone.')">
+                    <button type="button">Delete My Account</button>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

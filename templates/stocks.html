@@ -4,47 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stocks</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
-}
-
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    flex-direction: column;
-}
-
-h1 {
-    color: #333;
-}
-
-p {
-    color: #666;
-}
-    </style>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="container">
-        <h1><u>Stocks</u></h1>
-        <p>(Purchasing to be implemented soon)</p>
-        <br>
-        <h1>Pot o' Honey Banking | Rating: A+</h1>
-        <h3>$30.00 a share</h3>
-        <br>
-        <h1>ISSS | Rating: A-</h1>
-        <h3>$20.00 a share</h3>
-        <br>
-        <h1>Cantaloupe Stock | Rating: F</h1>
-        <h3>$00.01 a share</h3>
-        <br>
-    </div>
+        <h1>Stocks</h1>
+        <p><a href="/dashboard">Back to Dashboard</a></p>
 
+        <div class="tradingview-widget-container" style="width: 100%; max-width: 900px;">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            {
+                "symbols": [
+                    {"proName": "NASDAQ:AAPL", "title": "Apple"},
+                    {"proName": "NASDAQ:GOOGL", "title": "Google"},
+                    {"proName": "NASDAQ:TSLA", "title": "Tesla"},
+                    {"proName": "NYSE:JPM", "title": "JPMorgan"}
+                ],
+                "colorTheme": "light",
+                "isTransparent": true,
+                "displayMode": "adaptive",
+                "locale": "en"
+            }
+            </script>
+        </div>
+
+        <div class="tradingview-widget-container" style="width: 100%; max-width: 800px; margin: 20px auto;">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+            {
+                "symbol": "NASDAQ:AAPL",
+                "width": "100%",
+                "height": 400,
+                "locale": "en",
+                "dateRange": "1M",
+                "colorTheme": "light",
+                "isTransparent": false
+            }
+            </script>
+        </div>
+    </div>
 </body>
 </html>

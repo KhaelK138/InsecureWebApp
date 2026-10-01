@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <rect width="300" height="200" fill="#fff" rx="4"/>
+  <line x1="40" y1="170" x2="280" y2="170" stroke="#ccc" stroke-width="1"/>
+  <text x="48" y="185" font-size="9" fill="#999">Mon</text>
+  <text x="88" y="185" font-size="9" fill="#999">Tue</text>
+  <text x="128" y="185" font-size="9" fill="#999">Wed</text>
+  <text x="168" y="185" font-size="9" fill="#999">Thu</text>
+  <text x="210" y="185" font-size="9" fill="#999">Fri</text>
+  <text x="248" y="185" font-size="9" fill="#999">Sat</text>
+  <rect x="45" y="90" width="25" height="80" fill="#007bff" rx="2" opacity="0.8"/>
+  <rect x="85" y="120" width="25" height="50" fill="#007bff" rx="2" opacity="0.8"/>
+  <rect x="125" y="60" width="25" height="110" fill="#007bff" rx="2" opacity="0.8"/>
+  <rect x="165" y="100" width="25" height="70" fill="#007bff" rx="2" opacity="0.8"/>
+  <rect x="205" y="130" width="25" height="40" fill="#007bff" rx="2" opacity="0.8"/>
+  <rect x="245" y="150" width="25" height="20" fill="#007bff" rx="2" opacity="0.6"/>
+  <text x="52" y="85" font-size="9" fill="#333" text-anchor="middle" transform="translate(5,0)">12</text>
+  <text x="92" y="115" font-size="9" fill="#333" text-anchor="middle" transform="translate(5,0)">8</text>
+  <text x="132" y="55" font-size="9" fill="#333" text-anchor="middle" transform="translate(5,0)">17</text>
+  <text x="172" y="95" font-size="9" fill="#333" text-anchor="middle" transform="translate(5,0)">11</text>
+  <text x="212" y="125" font-size="9" fill="#333" text-anchor="middle" transform="translate(5,0)">6</text>
+  <text x="252" y="145" font-size="9" fill="#333" text-anchor="middle" transform="translate(5,0)">3</text>
+</svg>

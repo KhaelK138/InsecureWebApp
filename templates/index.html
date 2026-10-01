@@ -3,24 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pot o' Honey Banking</title>
+    <title>Login</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
         <h1>Welcome to Pot o' Honey Banking!</h1>
-        <b><u>Security</u></b>
-        <p>We have the latest in security innovations, such as:</p>
-        <p><br><br><br><br><br><br><br><h1>...</h1><br><br></p>
-        <!-- @khael put our security innovations here -->
-        <button onclick="location.href='/login'">Login</button>
-        
+        <p>We have all the latest in security advancements, such as:</p>
+        <br><br><br>
+        <p>...</p>
+        <br><br><br>
+        <form action="/" method="post">
+            <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username"><br>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password"><br>
+            {% if error %}
+            <p style="color: red;">{{ error }}</p>
+            {% endif %}
+            <br>
+            <button onclick=submit()>Login</button>
+        </form>
+        <p>Need an account? <a href="/register">Register here</a></p>
+
         <!-- Mailing List Subscription Form -->
-        <p><br><br><br><br><br></p>
         <div class="mailing-list">
             <h2>Join Our Mailing List</h2>
-            {% if error %}
-            <p>{{ error }}</p>
+            {% if subscribe_msg %}
+            <p>{{ subscribe_msg }}</p>
             {% endif %}
             <form action="/subscribe" method="post">
                 <label for="email">Email:</label><br>

@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    {% include 'nav.html' %}
     <h1>Admin Panel</h1>
+    <p><a href="/admin/tickets">View Support Tickets</a></p>
     {% if error %}
         <p>{{ error }}</p>
         {% endif %}
@@ -32,7 +35,5 @@
         </tr>
         {% endfor %}
     </table>
-    <br>
-    <a href="/dashboard">Back to Dashboard</a>
 </body>
 </html>

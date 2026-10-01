@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .rating-area { background: #fff; border: 1px solid #ccc; border-radius: 5px; padding: 15px; margin-bottom: 20px; overflow: visible; }
+        .star-select { font-size: 28px; cursor: pointer; color: #ccc; transition: color 0.1s; }
+        .star-select:hover, .star-select.active { color: gold; }
+    </style>
+</head>
+<body>
+    {% include 'nav.html' %}
+    <div class="container">
+        <h1>Customer Reviews</h1>
+
+        <div class="rating-area">
+            <strong>Average Rating</strong><br>
+            <div id="star-container" style="position: relative; display: inline-block; overflow: visible;">
+                <span id="star-base" style="font-size: 28px; color: #ccc; letter-spacing: 2px;">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                <span id="star-fill" style="position: absolute; top: 0; font-size: 28px; color: gold; white-space: nowrap; overflow: hidden; letter-spacing: 2px;">&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+            </div>
+            <span id="avg-text">{{ avg_rating }}/5 ({{ num_ratings }} ratings)</span>
+            <br><br>
+            <strong>Your Rating</strong><br>
+            <form action="/rate" method="post" id="rate-form" style="display: inline;">
+                <input type="hidden" name="rating" id="rating-input">
+                <span class="star-select" data-v="1">&#9733;</span>
+                <span class="star-select" data-v="2">&#9733;</span>
+                <span class="star-select" data-v="3">&#9733;</span>
+                <span class="star-select" data-v="4">&#9733;</span>
+                <span class="star-select" data-v="5">&#9733;</span>
+            </form>
+        </div>
+
+        <h2>Leave a Review:</h2>
+        <form action="/add_comment" method="post">
+            <textarea name="content" rows="4" cols="50"></textarea><br>
+            <input type="submit" value="Submit">
+        </form>
+
+        <h2>What our customers are saying:</h2>
+        {% for comment in comments[::-1] %}
+            <div class="comment-box">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <img src="{{ comment[3] }}" alt="" width="32" height="32" style="border-radius: 50%; object-fit: cover;">
+                    <strong>{{ comment[2] }}</strong>
+                </div>
+                <hr>
+                <p>{{ comment[1]|safe }}</p>
+            </div>
+        {% endfor %}
+    </div>
+    <script>
+        (function() {
+            var avg = {{ avg_rating }};
+            var base = document.getElementById('star-base');
+            var fill = document.getElementById('star-fill');
+            var baseWidth = base.offsetWidth;
+            var absAvg = Math.abs(avg);
+            var fillWidth = (absAvg / 5) * baseWidth;
+
+            fill.style.width = fillWidth + 'px';
+
+            if (avg >= 0) {
+                fill.style.left = '0';
+            } else {
+                fill.style.left = 'auto';
+                fill.style.right = '100%';
+                fill.style.textAlign = 'right';
+            }
+
+            var stars = document.querySelectorAll('.star-select');
+            var userRating = {{ user_rating if user_rating is not none else 'null' }};
+
+            function highlight(n) {
+                stars.forEach(function(s) {
+                    s.style.color = parseInt(s.dataset.v) <= n ? 'gold' : '#ccc';
+                });
+            }
+
+            if (userRating !== null && userRating >= 1 && userRating <= 5) {
+                highlight(userRating);
+            }
+
+            stars.forEach(function(star) {
+                star.addEventListener('mouseenter', function() { highlight(parseInt(this.dataset.v)); });
+                star.addEventListener('mouseleave', function() {
+                    if (userRating !== null && userRating >= 1 && userRating <= 5) highlight(userRating);
+                    else highlight(0);
+                });
+                star.addEventListener('click', function() {
+                    var v = parseInt(this.dataset.v);
+                    document.getElementById('rating-input').value = v;
+                    document.getElementById('rate-form').submit();
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

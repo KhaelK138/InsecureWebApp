@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 250">
+  <circle cx="125" cy="125" r="90" fill="none" stroke="#007bff" stroke-width="40" stroke-dasharray="180 386" stroke-dashoffset="0" transform="rotate(-90 125 125)"/>
+  <circle cx="125" cy="125" r="90" fill="none" stroke="#28a745" stroke-width="40" stroke-dasharray="113 453" stroke-dashoffset="-180" transform="rotate(-90 125 125)"/>
+  <circle cx="125" cy="125" r="90" fill="none" stroke="#ffc107" stroke-width="40" stroke-dasharray="57 509" stroke-dashoffset="-293" transform="rotate(-90 125 125)"/>
+  <circle cx="125" cy="125" r="90" fill="none" stroke="#dc3545" stroke-width="40" stroke-dasharray="40 526" stroke-dashoffset="-350" transform="rotate(-90 125 125)"/>
+  <circle cx="125" cy="125" r="50" fill="#fff"/>
+  <text x="125" y="120" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">Total</text>
+  <text x="125" y="138" text-anchor="middle" font-size="12" fill="#666">$10,238</text>
+  <rect x="20" y="230" width="8" height="8" fill="#007bff" rx="1"/>
+  <text x="32" y="238" font-size="9" fill="#666">Stocks 32%</text>
+  <rect x="95" y="230" width="8" height="8" fill="#28a745" rx="1"/>
+  <text x="107" y="238" font-size="9" fill="#666">Bonds 20%</text>
+  <rect x="160" y="230" width="8" height="8" fill="#ffc107" rx="1"/>
+  <text x="172" y="238" font-size="9" fill="#666">Crypto 10%</text>
+  <rect x="220" y="230" width="8" height="8" fill="#dc3545" rx="1"/>
+  <text x="232" y="238" font-size="9" fill="#666">Cash 7%</text>
+</svg>

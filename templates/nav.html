@@ -1,0 +1,16 @@
+<nav class="navbar">
+    <div class="nav-brand">
+        <img src="{{ profile_pic }}" alt="" width="24" height="24" style="border-radius: 50%; vertical-align: middle; margin-right: 5px; object-fit: cover;">
+        Pot o' Honey Banking
+    </div>
+    <div class="nav-links">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/support">Support</a>
+        <a href="/reviews">Reviews</a>
+        {% if is_admin %}
+        <a href="/admin">Admin Panel</a>
+        {% endif %}
+        <a href="/profile">Profile</a>
+        <a href="/logout">Logout</a>
+    </div>
+</nav>

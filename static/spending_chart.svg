@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 250">
+  <circle cx="125" cy="125" r="100" fill="#4a90d9"/>
+  <path d="M125,125 L125,25 A100,100 0 0,1 211,175 Z" fill="#5cb85c"/>
+  <path d="M125,125 L211,175 A100,100 0 0,1 39,175 Z" fill="#f0ad4e"/>
+  <text x="155" y="70" font-size="14" fill="#fff" font-family="Arial">Rent</text>
+  <text x="155" y="185" font-size="14" fill="#fff" font-family="Arial">Food</text>
+  <text x="50" y="150" font-size="14" fill="#fff" font-family="Arial">Other</text>
+</svg>
